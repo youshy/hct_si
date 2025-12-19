@@ -1,0 +1,27 @@
+{
+  "name": "hackathon-sales-intelligence",
+  "version": "1.0.0",
+  "description": "[SpotOn 2025 Hackathon Submission] App For Salespeople: Checking Sentiment From Won/Lost Deals",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SpotOnInc/hackathon-sales-intelligence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/SpotOnInc/hackathon-sales-intelligence/issues"
+  },
+  "homepage": "https://github.com/SpotOnInc/hackathon-sales-intelligence#readme",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
+    "@types/node": "^25.0.3",
+    "dotenv": "^17.2.3",
+    "typescript": "^5.9.3"
+  }
+}
