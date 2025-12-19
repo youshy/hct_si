@@ -7,13 +7,18 @@ import {
   getTotalStats,
   getWinLossRatio,
   getPipelineStats,
+  getDealsClosingSoon,
+  getStageStats,
+  STAGE_INFO,
   type Deal,
   type Note,
   type LossStats,
   type WinStats,
   type TotalStats,
   type WinLossRatio,
-  type PipelineStats
+  type PipelineStats,
+  type StageStats,
+  type DealStage
 } from '../lib/db';
 import { formatCurrency } from '../lib/utils/format';
 import { AtRiskCard } from './AtRiskCard';
@@ -37,8 +42,34 @@ const REASON_LABELS: Record<string, string> = {
   other: 'Other'
 };
 
+// Helper to format close date
+function formatCloseDate(date: Date | string | null): { text: string; color: string; urgent: boolean } | null {
+  if (!date) return null;
+
+  const closeDate = date instanceof Date ? date : new Date(date);
+  if (isNaN(closeDate.getTime())) return null;
+
+  const now = new Date();
+  const diffTime = closeDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { text: `Overdue ${Math.abs(diffDays)}d`, color: 'text-red-600 bg-red-50', urgent: true };
+  } else if (diffDays === 0) {
+    return { text: 'Today', color: 'text-orange-600 bg-orange-50', urgent: true };
+  } else if (diffDays <= 3) {
+    return { text: `${diffDays}d`, color: 'text-orange-600 bg-orange-50', urgent: true };
+  } else if (diffDays <= 7) {
+    return { text: `${diffDays}d`, color: 'text-yellow-600 bg-yellow-50', urgent: false };
+  } else {
+    return { text: `${diffDays}d`, color: 'text-green-600 bg-green-50', urgent: false };
+  }
+}
+
 export function Dashboard() {
   const [atRiskDeals, setAtRiskDeals] = useState<AtRiskDeal[]>([]);
+  const [closingSoonDeals, setClosingSoonDeals] = useState<Deal[]>([]);
+  const [stageStats, setStageStats] = useState<StageStats | null>(null);
   const [totalStats, setTotalStats] = useState<TotalStats | null>(null);
   const [pipelineStats, setPipelineStats] = useState<PipelineStats | null>(null);
   const [lossStats, setLossStats] = useState<LossStats | null>(null);
@@ -61,6 +92,8 @@ export function Dashboard() {
       }
 
       setAtRiskDeals(atRisk);
+      setClosingSoonDeals(await getDealsClosingSoon());
+      setStageStats(await getStageStats());
       setTotalStats(await getTotalStats());
       setPipelineStats(await getPipelineStats());
       setLossStats(await getLossStats());
@@ -126,6 +159,36 @@ export function Dashboard() {
       </header>
 
       <main className="px-4 py-4">
+        {/* Closing Soon Section */}
+        {closingSoonDeals.length > 0 && (
+          <section className="p-4 rounded-r-lg mb-6 border-l-4 bg-orange-50 border-orange-500">
+            <h2 className="font-bold text-lg mb-3 flex items-center gap-2 text-orange-800">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              Closing Soon ({closingSoonDeals.length})
+            </h2>
+            <div className="space-y-2">
+              {closingSoonDeals.slice(0, 5).map(deal => {
+                const closeInfo = formatCloseDate(deal.expected_close_date);
+                return (
+                  <div key={deal.id} className="bg-white rounded-lg p-3 flex items-center justify-between">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium text-gray-900 truncate">{deal.name}</div>
+                      <div className="text-sm text-gray-500">{formatCurrency(deal.value)}</div>
+                    </div>
+                    {closeInfo && (
+                      <span className={`text-xs font-medium px-2 py-1 rounded ${closeInfo.color}`}>
+                        {closeInfo.text}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
         {/* At-Risk Deals Section */}
         <section className={`p-4 rounded-r-lg mb-6 border-l-4 ${
           atRiskDeals.length === 0
@@ -153,6 +216,42 @@ export function Dashboard() {
             ))
           )}
         </section>
+
+        {/* Stage Breakdown */}
+        {stageStats && (
+          <section className="mb-6">
+            <h2 className="text-gray-700 font-semibold mb-3">Pipeline Stages</h2>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <div className="space-y-3">
+                {(Object.keys(STAGE_INFO) as DealStage[]).map((stage) => {
+                  const stat = stageStats[stage];
+                  const totalCount = Object.values(stageStats).reduce((sum, s) => sum + s.count, 0);
+                  const percentage = totalCount > 0 ? (stat.count / totalCount) * 100 : 0;
+
+                  return (
+                    <div key={stage} className="flex items-center gap-3">
+                      <div className="w-24 text-sm font-medium" style={{ color: STAGE_INFO[stage].color }}>
+                        {STAGE_INFO[stage].label}
+                      </div>
+                      <div className="flex-1 h-6 bg-gray-100 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: STAGE_INFO[stage].color
+                          }}
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600 w-20 text-right">
+                        {stat.count} · {formatCurrency(stat.value)}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Pipeline Donut Charts */}
         {pipelineStats && (pipelineStats.open.count > 0 || pipelineStats.won.count > 0 || pipelineStats.lost.count > 0) && (

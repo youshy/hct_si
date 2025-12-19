@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import type { Deal, Note } from '../lib/db';
-import { getNotesByDeal, addNote, updateDeal } from '../lib/db';
+import type { Deal, Note, DealStage } from '../lib/db';
+import { getNotesByDeal, addNote, updateDeal, archiveDeal, STAGE_INFO } from '../lib/db';
 import { analyzeSentiment } from '../lib/api/sentiment';
 import { formatCurrency } from '../lib/utils/format';
 import { NoteItem } from './NoteItem';
@@ -12,6 +12,28 @@ interface DealDetailProps {
   deal: Deal;
   onBack: () => void;
   onDealUpdated: () => void;
+}
+
+// Helper to format expected close date
+function formatCloseDate(date: Date | string | null): { text: string; color: string } | null {
+  if (!date) return null;
+
+  const closeDate = date instanceof Date ? date : new Date(date);
+  if (isNaN(closeDate.getTime())) return null;
+
+  const now = new Date();
+  const diffTime = closeDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { text: `Overdue by ${Math.abs(diffDays)} day${Math.abs(diffDays) !== 1 ? 's' : ''}`, color: 'text-red-600' };
+  } else if (diffDays === 0) {
+    return { text: 'Closes today', color: 'text-orange-600' };
+  } else if (diffDays <= 7) {
+    return { text: `Closes in ${diffDays} day${diffDays !== 1 ? 's' : ''}`, color: 'text-yellow-600' };
+  } else {
+    return { text: `Closes in ${diffDays} days`, color: 'text-green-600' };
+  }
 }
 
 export function DealDetail({ deal, onBack, onDealUpdated }: DealDetailProps) {
@@ -26,6 +48,11 @@ export function DealDetail({ deal, onBack, onDealUpdated }: DealDetailProps) {
   useEffect(() => {
     loadNotes();
   }, [deal.id]);
+
+  // Keep currentDeal in sync with deal prop
+  useEffect(() => {
+    setCurrentDeal(deal);
+  }, [deal]);
 
   const loadNotes = async () => {
     try {
@@ -86,11 +113,25 @@ export function DealDetail({ deal, onBack, onDealUpdated }: DealDetailProps) {
     onBack();
   };
 
-  const handleEditComplete = () => {
+  const handleEditComplete = async () => {
     setShowEditModal(false);
     onDealUpdated();
-    // Refresh local deal state
-    setCurrentDeal({ ...currentDeal });
+  };
+
+  const handleArchive = async () => {
+    await archiveDeal(deal.id);
+    if (navigator.vibrate) navigator.vibrate(10);
+    showToast(`"${deal.name}" archived`);
+    onDealUpdated();
+    onBack();
+  };
+
+  const handleStageChange = async (newStage: DealStage) => {
+    await updateDeal(deal.id, { stage: newStage });
+    setCurrentDeal({ ...currentDeal, stage: newStage });
+    if (navigator.vibrate) navigator.vibrate(10);
+    showToast(`Stage updated to ${STAGE_INFO[newStage].label}`);
+    onDealUpdated();
   };
 
   const statusClasses = {
@@ -105,6 +146,8 @@ export function DealDetail({ deal, onBack, onDealUpdated }: DealDetailProps) {
     neutral: { color: 'text-gray-500', label: 'Neutral sentiment' },
     negative: { color: 'text-red-600', label: 'Negative sentiment' }
   };
+
+  const closeDateInfo = formatCloseDate(currentDeal.expected_close_date);
 
   // More padding when action buttons are shown (open deals)
   const bottomPadding = currentDeal.status === 'open' ? 'pb-40' : 'pb-24';
@@ -123,29 +166,75 @@ export function DealDetail({ deal, onBack, onDealUpdated }: DealDetailProps) {
             </svg>
             Back
           </button>
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="px-3 py-1.5 text-blue-600 font-medium rounded-lg active:bg-blue-50"
-          >
-            Edit
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleArchive}
+              className="p-2 text-gray-500 rounded-lg active:bg-gray-100"
+              title="Archive deal"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+            </button>
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="px-3 py-1.5 text-blue-600 font-medium rounded-lg active:bg-blue-50"
+            >
+              Edit
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Deal Info */}
       <div className="bg-white px-4 py-6 border-b border-gray-200">
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-2">
           <h1 className="text-2xl font-bold text-gray-900">{currentDeal.name}</h1>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusClasses[currentDeal.status]}`}>
             {currentDeal.status.charAt(0).toUpperCase() + currentDeal.status.slice(1)}
           </span>
         </div>
 
+        {currentDeal.customer_name && (
+          <div className="text-gray-500 mb-3">{currentDeal.customer_name}</div>
+        )}
+
         <div className="text-3xl font-bold text-gray-900 mb-4">
           {formatCurrency(currentDeal.value)}
         </div>
 
+        {/* Stage selector for open deals */}
+        {currentDeal.status === 'open' && (
+          <div className="mb-4">
+            <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">Pipeline Stage</div>
+            <div className="flex gap-1 overflow-x-auto pb-1">
+              {(Object.keys(STAGE_INFO) as DealStage[]).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleStageChange(s)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                    currentDeal.stage === s
+                      ? 'text-white'
+                      : 'bg-gray-100 text-gray-600 active:bg-gray-200'
+                  }`}
+                  style={currentDeal.stage === s ? { backgroundColor: STAGE_INFO[s].color } : {}}
+                >
+                  {STAGE_INFO[s].label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2 text-sm">
+          {closeDateInfo && currentDeal.status === 'open' && (
+            <div className={`flex items-center gap-2 ${closeDateInfo.color}`}>
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              {closeDateInfo.text}
+            </div>
+          )}
           {latestSentiment && (
             <div className={`flex items-center gap-2 ${sentimentInfo[latestSentiment].color}`}>
               <div className={`w-2 h-2 rounded-full ${

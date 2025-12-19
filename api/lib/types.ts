@@ -1,3 +1,5 @@
+export type DealStage = 'prospect' | 'qualified' | 'proposal' | 'negotiation' | 'closing';
+
 export interface Deal {
   id: string;
   name: string;
@@ -6,6 +8,11 @@ export interface Deal {
   loss_reason: 'price' | 'timing' | 'competitor' | 'fit' | 'other' | null;
   created_at: string;
   updated_at: string;
+  // v4 fields
+  archived: boolean;
+  expected_close_date: string | null;
+  customer_name: string | null;
+  stage: DealStage;
 }
 
 export interface Note {

@@ -1,6 +1,28 @@
 import type { Deal } from '../lib/db';
+import { STAGE_INFO } from '../lib/db';
 import { formatCurrency, getSentimentColor } from '../lib/utils/format';
 import { useSwipeAction } from '../hooks/useSwipeAction';
+
+// Helper to format close date for card display
+function formatCloseDate(date: Date | string | null): { text: string; color: string } | null {
+  if (!date) return null;
+
+  const closeDate = date instanceof Date ? date : new Date(date);
+  if (isNaN(closeDate.getTime())) return null;
+
+  const now = new Date();
+  const diffTime = closeDate.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays < 0) {
+    return { text: `${Math.abs(diffDays)}d overdue`, color: 'text-red-600' };
+  } else if (diffDays === 0) {
+    return { text: 'Today', color: 'text-orange-600' };
+  } else if (diffDays <= 7) {
+    return { text: `${diffDays}d left`, color: 'text-yellow-600' };
+  }
+  return null; // Don't show if more than 7 days
+}
 
 interface DealCardProps {
   deal: Deal;
@@ -81,14 +103,41 @@ export function DealCard({ deal, sentimentLabel, onClick, onSwipeWon, onSwipeLos
           isAtRisk ? 'border-2 border-red-300 bg-red-50' : ''
         } ${showSwipeIndicator ? '' : 'rounded-lg'}`}
       >
-        <div className="flex items-center">
-          <div className={`w-3 h-3 rounded-full mr-3 ${dotColor}`} />
-          <div>
-            <div className="text-lg font-medium text-gray-900">{deal.name}</div>
-            <div className="text-sm text-gray-500">{formatCurrency(deal.value)}</div>
+        <div className="flex items-center flex-1 min-w-0">
+          <div className={`w-3 h-3 rounded-full mr-3 flex-shrink-0 ${dotColor}`} />
+          <div className="min-w-0 flex-1">
+            <div className="text-lg font-medium text-gray-900 truncate">{deal.name}</div>
+            {deal.customer_name && (
+              <div className="text-sm text-gray-400 truncate">{deal.customer_name}</div>
+            )}
+            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+              <span className="text-sm text-gray-500">{formatCurrency(deal.value)}</span>
+              {deal.stage && STAGE_INFO[deal.stage] && deal.status === 'open' && (
+                <span
+                  className="text-xs px-1.5 py-0.5 rounded"
+                  style={{
+                    backgroundColor: `${STAGE_INFO[deal.stage].color}20`,
+                    color: STAGE_INFO[deal.stage].color
+                  }}
+                >
+                  {STAGE_INFO[deal.stage].label}
+                </span>
+              )}
+              {deal.status === 'open' && (() => {
+                const closeInfo = formatCloseDate(deal.expected_close_date);
+                return closeInfo ? (
+                  <span className={`text-xs font-medium ${closeInfo.color}`}>
+                    {closeInfo.text}
+                  </span>
+                ) : null;
+              })()}
+              <span className="text-xs text-gray-400">
+                {new Date(deal.created_at).toLocaleDateString()}
+              </span>
+            </div>
           </div>
         </div>
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusClasses[deal.status]}`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium flex-shrink-0 ml-2 ${statusClasses[deal.status]}`}>
           {deal.status.charAt(0).toUpperCase() + deal.status.slice(1)}
         </span>
       </div>

@@ -8,9 +8,10 @@ interface ActionMenuProps {
   onEditDeal: () => void;
   onMarkWon: () => void;
   onMarkLost: () => void;
+  onArchive?: () => void;
 }
 
-export function ActionMenu({ deal, isOpen, onClose, onAddNote, onEditDeal, onMarkWon, onMarkLost }: ActionMenuProps) {
+export function ActionMenu({ deal, isOpen, onClose, onAddNote, onEditDeal, onMarkWon, onMarkLost, onArchive }: ActionMenuProps) {
   if (!isOpen) return null;
 
   return (
@@ -49,6 +50,17 @@ export function ActionMenu({ deal, isOpen, onClose, onAddNote, onEditDeal, onMar
                 Mark Lost
               </button>
             </>
+          )}
+          {onArchive && (
+            <button
+              onClick={() => { onArchive(); onClose(); }}
+              className="w-full py-3 px-4 text-left text-gray-600 bg-gray-50 rounded-lg active:bg-gray-100 font-medium flex items-center gap-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+              </svg>
+              Archive Deal
+            </button>
           )}
         </div>
         <button

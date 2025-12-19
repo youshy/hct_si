@@ -1,7 +1,6 @@
 import {
   db,
-  getUnsyncedDeals,
-  getUnsyncedNotes,
+  getDeals,
   markDealsSynced,
   markNotesSynced,
   type Deal,
@@ -14,6 +13,7 @@ interface SyncRequest {
     deals: Deal[];
     notes: Note[];
   };
+  fullSync?: boolean;
 }
 
 interface SyncResponse {
@@ -44,17 +44,19 @@ async function applyServerUpdates(updates: {
 }
 
 export async function performSync(): Promise<void> {
-  const unsyncedDeals = await getUnsyncedDeals();
-  const unsyncedNotes = await getUnsyncedNotes();
+  // Get ALL local deals and notes (including archived) for full persistence
+  const allDeals = await getDeals(true); // true = include archived
+  const allNotes = await db.notes.toArray();
 
   const lastSync = localStorage.getItem('lastSyncTime');
 
   const request: SyncRequest = {
     lastSync,
     changes: {
-      deals: unsyncedDeals,
-      notes: unsyncedNotes
-    }
+      deals: allDeals,
+      notes: allNotes
+    },
+    fullSync: true
   };
 
   const response = await fetch('/api/sync', {
@@ -69,13 +71,15 @@ export async function performSync(): Promise<void> {
 
   const data: SyncResponse = await response.json();
 
+  // Apply any updates from server (in case other devices made changes)
   await applyServerUpdates(data.updates);
 
-  if (unsyncedDeals.length > 0) {
-    await markDealsSynced(unsyncedDeals.map(d => d.id));
+  // Mark all local items as synced
+  if (allDeals.length > 0) {
+    await markDealsSynced(allDeals.map(d => d.id));
   }
-  if (unsyncedNotes.length > 0) {
-    await markNotesSynced(unsyncedNotes.map(n => n.id));
+  if (allNotes.length > 0) {
+    await markNotesSynced(allNotes.map(n => n.id));
   }
 
   localStorage.setItem('lastSyncTime', data.serverTime);

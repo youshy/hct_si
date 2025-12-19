@@ -69,7 +69,12 @@ async function upsertDeals(deals: Deal[]): Promise<void> {
         status: d.status,
         loss_reason: d.loss_reason,
         created_at: d.created_at,
-        updated_at: d.updated_at
+        updated_at: d.updated_at,
+        // v4 fields
+        archived: d.archived ?? false,
+        expected_close_date: d.expected_close_date,
+        customer_name: d.customer_name,
+        stage: d.stage ?? 'prospect'
       })),
       {
         onConflict: 'id',

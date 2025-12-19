@@ -1,17 +1,30 @@
 import { db } from './database';
-import type { Deal } from './types';
+import type { Deal, DealStage } from './types';
 
-export async function addDeal(name: string, value: number): Promise<Deal> {
+interface AddDealOptions {
+  name: string;
+  value: number;
+  customer_name?: string | null;
+  expected_close_date?: Date | null;
+  stage?: DealStage;
+}
+
+export async function addDeal(options: AddDealOptions): Promise<Deal> {
   const now = new Date();
   const deal: Deal = {
     id: crypto.randomUUID(),
-    name,
-    value,
+    name: options.name,
+    value: options.value,
     status: 'open',
     loss_reason: null,
     created_at: now,
     updated_at: now,
-    synced: false
+    synced: false,
+    // v4 fields
+    archived: false,
+    expected_close_date: options.expected_close_date ?? null,
+    customer_name: options.customer_name ?? null,
+    stage: options.stage ?? 'prospect'
   };
   try {
     await db.deals.add(deal);
@@ -31,8 +44,14 @@ export async function updateDeal(id: string, updates: Partial<Deal>): Promise<vo
   });
 }
 
-export async function getDeals(): Promise<Deal[]> {
-  return db.deals.orderBy('created_at').reverse().toArray();
+export async function getDeals(includeArchived = false): Promise<Deal[]> {
+  const deals = await db.deals.orderBy('created_at').reverse().toArray();
+  if (includeArchived) return deals;
+  return deals.filter(d => !d.archived);
+}
+
+export async function getArchivedDeals(): Promise<Deal[]> {
+  return db.deals.where('archived').equals(1).toArray();
 }
 
 export async function getDeal(id: string): Promise<Deal | undefined> {
@@ -48,15 +67,26 @@ export async function markDealsSynced(ids: string[]): Promise<void> {
 }
 
 export async function getOpenDeals(): Promise<Deal[]> {
-  return db.deals.where('status').equals('open').toArray();
+  const deals = await db.deals.where('status').equals('open').toArray();
+  return deals.filter(d => !d.archived);
 }
 
 export async function getLostDeals(): Promise<Deal[]> {
-  return db.deals.where('status').equals('lost').toArray();
+  const deals = await db.deals.where('status').equals('lost').toArray();
+  return deals.filter(d => !d.archived);
 }
 
 export async function getWonDeals(): Promise<Deal[]> {
-  return db.deals.where('status').equals('won').toArray();
+  const deals = await db.deals.where('status').equals('won').toArray();
+  return deals.filter(d => !d.archived);
+}
+
+export async function archiveDeal(id: string): Promise<void> {
+  await updateDeal(id, { archived: true });
+}
+
+export async function restoreDeal(id: string): Promise<void> {
+  await updateDeal(id, { archived: false });
 }
 
 export interface TotalStats {
@@ -67,7 +97,7 @@ export interface TotalStats {
 }
 
 export async function getTotalStats(): Promise<TotalStats> {
-  const allDeals = await getDeals();
+  const allDeals = await getDeals(); // Already excludes archived
   const openDeals = allDeals.filter(d => d.status === 'open');
 
   return {
@@ -134,7 +164,7 @@ export interface WinLossRatio {
 }
 
 export async function getWinLossRatio(): Promise<WinLossRatio> {
-  const deals = await db.deals.toArray();
+  const deals = await getDeals(); // Excludes archived
   const won = deals.filter(d => d.status === 'won').length;
   const lost = deals.filter(d => d.status === 'lost').length;
   const total = won + lost;
@@ -153,7 +183,7 @@ export interface PipelineStats {
 }
 
 export async function getPipelineStats(): Promise<PipelineStats> {
-  const deals = await db.deals.toArray();
+  const deals = await getDeals(); // Excludes archived
 
   const stats: PipelineStats = {
     open: { count: 0, value: 0 },
@@ -164,6 +194,54 @@ export async function getPipelineStats(): Promise<PipelineStats> {
   for (const deal of deals) {
     stats[deal.status].count++;
     stats[deal.status].value += deal.value;
+  }
+
+  return stats;
+}
+
+// Get deals closing soon (within next 7 days)
+export async function getDealsClosingSoon(): Promise<Deal[]> {
+  const deals = await getOpenDeals();
+  const now = new Date();
+  const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  return deals.filter(deal => {
+    if (!deal.expected_close_date) return false;
+    const closeDate = new Date(deal.expected_close_date);
+    return closeDate <= weekFromNow;
+  }).sort((a, b) => {
+    const dateA = new Date(a.expected_close_date!).getTime();
+    const dateB = new Date(b.expected_close_date!).getTime();
+    return dateA - dateB;
+  });
+}
+
+// Get stage breakdown stats for open deals
+export interface StageStats {
+  prospect: { count: number; value: number };
+  qualified: { count: number; value: number };
+  proposal: { count: number; value: number };
+  negotiation: { count: number; value: number };
+  closing: { count: number; value: number };
+}
+
+export async function getStageStats(): Promise<StageStats> {
+  const deals = await getOpenDeals();
+
+  const stats: StageStats = {
+    prospect: { count: 0, value: 0 },
+    qualified: { count: 0, value: 0 },
+    proposal: { count: 0, value: 0 },
+    negotiation: { count: 0, value: 0 },
+    closing: { count: 0, value: 0 }
+  };
+
+  for (const deal of deals) {
+    const stage = deal.stage || 'prospect';
+    if (stats[stage]) {
+      stats[stage].count++;
+      stats[stage].value += deal.value;
+    }
   }
 
   return stats;
