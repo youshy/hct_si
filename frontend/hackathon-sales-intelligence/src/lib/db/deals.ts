@@ -145,3 +145,26 @@ export async function getWinLossRatio(): Promise<WinLossRatio> {
     winRate: total > 0 ? Math.round((won / total) * 100) : 0
   };
 }
+
+export interface PipelineStats {
+  open: { count: number; value: number };
+  won: { count: number; value: number };
+  lost: { count: number; value: number };
+}
+
+export async function getPipelineStats(): Promise<PipelineStats> {
+  const deals = await db.deals.toArray();
+
+  const stats: PipelineStats = {
+    open: { count: 0, value: 0 },
+    won: { count: 0, value: 0 },
+    lost: { count: 0, value: 0 }
+  };
+
+  for (const deal of deals) {
+    stats[deal.status].count++;
+    stats[deal.status].value += deal.value;
+  }
+
+  return stats;
+}

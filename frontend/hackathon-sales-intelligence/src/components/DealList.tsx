@@ -33,7 +33,11 @@ function vibrate(pattern: number | number[] = 10) {
   }
 }
 
-export function DealList() {
+interface DealListProps {
+  onDealSelect?: (deal: Deal) => void;
+}
+
+export function DealList({ onDealSelect }: DealListProps) {
   const [deals, setDeals] = useState<DealWithSentiment[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -131,6 +135,16 @@ export function DealList() {
     showToast('Deals refreshed', 'info');
   }, [loadDeals, showToast]);
 
+  const handleSwipeWon = async (deal: Deal) => {
+    await updateDeal(deal.id, { status: 'won' });
+    showToast(`"${deal.name}" marked as won!`, 'success');
+    await loadDeals();
+  };
+
+  const handleSwipeLost = (deal: Deal) => {
+    setLossDeal(deal);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 pb-24">
@@ -200,7 +214,9 @@ export function DealList() {
                 key={deal.id}
                 deal={deal}
                 sentimentLabel={sentimentLabel}
-                onClick={() => setSelectedDeal(deal)}
+                onClick={() => onDealSelect ? onDealSelect(deal) : setSelectedDeal(deal)}
+                onSwipeWon={() => handleSwipeWon(deal)}
+                onSwipeLost={() => handleSwipeLost(deal)}
               />
             ))
           )}

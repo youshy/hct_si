@@ -6,17 +6,23 @@ import {
   getWinStats,
   getTotalStats,
   getWinLossRatio,
+  getPipelineStats,
   type Deal,
   type Note,
   type LossStats,
   type WinStats,
   type TotalStats,
-  type WinLossRatio
+  type WinLossRatio,
+  type PipelineStats
 } from '../lib/db';
 import { formatCurrency } from '../lib/utils/format';
 import { AtRiskCard } from './AtRiskCard';
 import { EmptyState } from './EmptyState';
 import { DashboardSkeleton } from './Skeleton';
+import { DonutChart } from './DonutChart';
+import { SyncStatusBar } from './SyncStatusBar';
+import { useSync } from '../hooks/useSync';
+import { useToast } from './Toast';
 
 interface AtRiskDeal {
   deal: Deal;
@@ -34,10 +40,13 @@ const REASON_LABELS: Record<string, string> = {
 export function Dashboard() {
   const [atRiskDeals, setAtRiskDeals] = useState<AtRiskDeal[]>([]);
   const [totalStats, setTotalStats] = useState<TotalStats | null>(null);
+  const [pipelineStats, setPipelineStats] = useState<PipelineStats | null>(null);
   const [lossStats, setLossStats] = useState<LossStats | null>(null);
   const [winStats, setWinStats] = useState<WinStats | null>(null);
   const [winLossRatio, setWinLossRatio] = useState<WinLossRatio | null>(null);
   const [loading, setLoading] = useState(true);
+  const { isSyncing, lastSyncTime, error: syncError, syncNow } = useSync();
+  const { showToast } = useToast();
 
   const loadDashboardData = useCallback(async () => {
     try {
@@ -53,6 +62,7 @@ export function Dashboard() {
 
       setAtRiskDeals(atRisk);
       setTotalStats(await getTotalStats());
+      setPipelineStats(await getPipelineStats());
       setLossStats(await getLossStats());
       setWinStats(await getWinStats());
       setWinLossRatio(await getWinLossRatio());
@@ -67,6 +77,17 @@ export function Dashboard() {
     loadDashboardData();
   }, [loadDashboardData]);
 
+  const handleSync = async () => {
+    try {
+      await syncNow();
+      showToast('Sync completed successfully', 'success');
+      // Reload dashboard data after sync
+      await loadDashboardData();
+    } catch {
+      showToast('Sync failed - will retry automatically', 'error');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 pb-24">
@@ -74,6 +95,12 @@ export function Dashboard() {
           <div className="px-4 py-4">
             <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
           </div>
+          <SyncStatusBar
+            isSyncing={isSyncing}
+            lastSyncTime={lastSyncTime}
+            error={syncError}
+            onSync={handleSync}
+          />
         </header>
         <DashboardSkeleton />
       </div>
@@ -90,6 +117,12 @@ export function Dashboard() {
         <div className="px-4 py-4">
           <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
         </div>
+        <SyncStatusBar
+          isSyncing={isSyncing}
+          lastSyncTime={lastSyncTime}
+          error={syncError}
+          onSync={handleSync}
+        />
       </header>
 
       <main className="px-4 py-4">
@@ -120,6 +153,62 @@ export function Dashboard() {
             ))
           )}
         </section>
+
+        {/* Pipeline Donut Charts */}
+        {pipelineStats && (pipelineStats.open.count > 0 || pipelineStats.won.count > 0 || pipelineStats.lost.count > 0) && (
+          <section className="mb-6">
+            <h2 className="text-gray-700 font-semibold mb-3">Deal Distribution</h2>
+            <div className="bg-white p-4 rounded-lg shadow-sm">
+              <div className="grid grid-cols-2 gap-4">
+                {/* By Count */}
+                <div className="text-center">
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">By Count</div>
+                  <DonutChart
+                    segments={[
+                      { label: 'Open', value: pipelineStats.open.count, color: '#60A5FA' },
+                      { label: 'Won', value: pipelineStats.won.count, color: '#34D399' },
+                      { label: 'Lost', value: pipelineStats.lost.count, color: '#F87171' }
+                    ]}
+                    centerValue={totalStats?.totalDeals ?? 0}
+                    centerLabel="Deals"
+                    size={140}
+                    showLegend={false}
+                  />
+                </div>
+                {/* By Value */}
+                <div className="text-center">
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-2">By Value</div>
+                  <DonutChart
+                    segments={[
+                      { label: 'Open', value: pipelineStats.open.value, color: '#60A5FA' },
+                      { label: 'Won', value: pipelineStats.won.value, color: '#34D399' },
+                      { label: 'Lost', value: pipelineStats.lost.value, color: '#F87171' }
+                    ]}
+                    centerValue={formatCurrency(totalStats?.totalValue ?? 0)}
+                    centerLabel="Value"
+                    size={140}
+                    showLegend={false}
+                  />
+                </div>
+              </div>
+              {/* Shared Legend */}
+              <div className="flex justify-center gap-4 mt-4 pt-4 border-t border-gray-100">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-[#60A5FA]" />
+                  <span className="text-sm text-gray-600">Open</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-[#34D399]" />
+                  <span className="text-sm text-gray-600">Won</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3 h-3 rounded-full bg-[#F87171]" />
+                  <span className="text-sm text-gray-600">Lost</span>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* Pipeline Summary */}
         <section className="mb-6">
