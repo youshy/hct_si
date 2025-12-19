@@ -229,14 +229,14 @@ vercel env add GEMINI_API_KEY
 
 ## Acceptance Criteria
 
-- [ ] Repository connected to deployment platform
-- [ ] Push to `main` triggers automatic deployment
-- [ ] Frontend builds successfully
-- [ ] API functions deploy successfully
-- [ ] Production URLs are accessible
-- [ ] Environment variables configured
-- [ ] Build logs accessible for debugging
-- [ ] Team can see deployment status
+- [x] Repository connected to deployment platform
+- [x] Push to `main` triggers automatic deployment
+- [x] Frontend builds successfully
+- [x] API functions deploy successfully
+- [x] Production URLs are accessible
+- [x] Environment variables configured
+- [x] Build logs accessible for debugging
+- [x] Team can see deployment status
 
 ---
 

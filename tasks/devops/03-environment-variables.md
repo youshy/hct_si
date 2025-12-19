@@ -192,24 +192,24 @@ GEMINI_API_KEY=...
 
 ## Acceptance Criteria
 
-- [ ] Supabase URL and key configured in Vercel
-- [ ] Gemini API key configured in Vercel
-- [ ] Local `.env` files created for development
-- [ ] `.env` files are gitignored
-- [ ] Health check endpoint returns "healthy"
-- [ ] Sentiment endpoint works (uses Gemini key)
-- [ ] Team has access to credentials (securely shared)
-- [ ] No secrets in git history
+- [x] Supabase URL and key configured in Vercel
+- [x] Gemini API key configured in Vercel
+- [x] Local `.env` files created for development
+- [x] `.env` files are gitignored
+- [x] Health check endpoint returns "healthy"
+- [x] Sentiment endpoint works (uses Gemini key)
+- [x] Team has access to credentials (securely shared)
+- [x] No secrets in git history
 
 ---
 
 ## Security Checklist
 
-- [ ] Never commit `.env` files
-- [ ] Never log environment variables
-- [ ] Use `anon` key (not `service_role`) for Supabase
-- [ ] Rotate keys if accidentally exposed
-- [ ] Use different keys for dev vs production (if time permits)
+- [x] Never commit `.env` files
+- [x] Never log environment variables
+- [x] Use `anon` key (not `service_role`) for Supabase
+- [x] Rotate keys if accidentally exposed
+- [x] Use different keys for dev vs production (if time permits)
 
 ---
 

@@ -14,7 +14,12 @@ export function DealCard({ deal, sentimentLabel, onClick }: DealCardProps) {
     lost: 'bg-red-100 text-red-800'
   };
 
-  const isAtRisk = sentimentLabel === 'negative';
+  // Won deals always show green, no at-risk highlight
+  const isWon = deal.status === 'won';
+  const isAtRisk = !isWon && sentimentLabel === 'negative';
+
+  // Won deals get green dot regardless of notes
+  const dotColor = isWon ? 'bg-green-500' : getSentimentColor(sentimentLabel);
 
   return (
     <div
@@ -24,7 +29,7 @@ export function DealCard({ deal, sentimentLabel, onClick }: DealCardProps) {
       }`}
     >
       <div className="flex items-center">
-        <div className={`w-3 h-3 rounded-full mr-3 ${getSentimentColor(sentimentLabel)}`} />
+        <div className={`w-3 h-3 rounded-full mr-3 ${dotColor}`} />
         <div>
           <div className="text-lg font-medium text-gray-900">{deal.name}</div>
           <div className="text-sm text-gray-500">{formatCurrency(deal.value)}</div>

@@ -253,15 +253,15 @@ Content-Type: application/json
 
 ## Acceptance Criteria
 
-- [ ] Endpoint accepts POST requests with `{ text }` body
-- [ ] Returns `{ score, label }` for valid input
-- [ ] Score is between -1 and 1
-- [ ] Label is one of: positive, neutral, negative
-- [ ] Returns neutral (not error) when Gemini fails
-- [ ] Returns neutral for empty text (with 400 status)
-- [ ] Response time < 3 seconds
-- [ ] CORS headers present
-- [ ] API key is not exposed in responses
+- [x] Endpoint accepts POST requests with `{ text }` body
+- [x] Returns `{ score, label }` for valid input
+- [x] Score is between -1 and 1
+- [x] Label is one of: positive, neutral, negative
+- [x] Returns neutral (not error) when Gemini fails
+- [x] Returns neutral for empty text (with 400 status)
+- [x] Response time < 3 seconds
+- [x] CORS headers present
+- [x] API key is not exposed in responses
 
 ---
 

@@ -226,16 +226,16 @@ console.log('Last sync:', localStorage.getItem('lastSyncTime'));
 
 ## Acceptance Criteria
 
-- [ ] Frontend successfully calls `/api/sync` endpoint
-- [ ] Local unsynced deals are sent to server
-- [ ] Local unsynced notes are sent to server
-- [ ] Server updates are received and applied locally
-- [ ] Items are marked as synced after successful sync
-- [ ] `lastSyncTime` is persisted in localStorage
-- [ ] Sync runs on app initialization
-- [ ] Sync runs when device comes online
-- [ ] Failed syncs retry after 30 seconds
-- [ ] Console logs show sync activity for debugging
+- [x] Frontend successfully calls `/api/sync` endpoint
+- [x] Local unsynced deals are sent to server
+- [x] Local unsynced notes are sent to server
+- [x] Server updates are received and applied locally
+- [x] Items are marked as synced after successful sync
+- [x] `lastSyncTime` is persisted in localStorage
+- [x] Sync runs on app initialization
+- [x] Sync runs when device comes online
+- [x] Failed syncs retry after 30 seconds
+- [x] Console logs show sync activity for debugging
 
 ---
 

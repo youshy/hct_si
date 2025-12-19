@@ -241,13 +241,13 @@ gh repo edit --add-collaborator teammate2
 
 ## Acceptance Criteria
 
-- [ ] GitHub repository created and accessible
-- [ ] All team members can clone the repo
-- [ ] Frontend runs locally (`npm run dev`)
-- [ ] Tailwind CSS is configured and working
-- [ ] Backend folder structure is in place
-- [ ] .gitignore covers all necessary files
-- [ ] README has basic setup instructions
+- [x] GitHub repository created and accessible
+- [x] All team members can clone the repo
+- [x] Frontend runs locally (`npm run dev`)
+- [x] Tailwind CSS is configured and working
+- [x] Backend folder structure is in place
+- [x] .gitignore covers all necessary files
+- [x] README has basic setup instructions
 
 ---
 

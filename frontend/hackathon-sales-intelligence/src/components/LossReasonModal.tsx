@@ -1,4 +1,5 @@
 import { updateDeal } from '../lib/db';
+import { useToast } from './Toast';
 
 const LOSS_REASONS = [
   { id: 'price', label: 'Price' },
@@ -19,6 +20,8 @@ interface LossReasonModalProps {
 }
 
 export function LossReasonModal({ dealId, dealName, isOpen, onClose, onComplete }: LossReasonModalProps) {
+  const { showToast } = useToast();
+
   if (!isOpen) return null;
 
   const handleSelectReason = async (reason: LossReason) => {
@@ -26,6 +29,8 @@ export function LossReasonModal({ dealId, dealName, isOpen, onClose, onComplete 
       status: 'lost',
       loss_reason: reason
     });
+    if (navigator.vibrate) navigator.vibrate(10);
+    showToast(`"${dealName}" marked as lost`);
     onComplete();
     onClose();
   };

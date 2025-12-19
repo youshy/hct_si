@@ -167,17 +167,17 @@ User taps FAB --> Show add modal
 
 ## Acceptance Criteria
 
-- [ ] Deal list displays all deals from IndexedDB
-- [ ] Each deal shows name, value, and status badge
-- [ ] Sentiment dot appears based on latest note sentiment
-- [ ] At-risk deals (negative sentiment) have red dot
-- [ ] FAB is visible and accessible
-- [ ] Add Deal modal opens and creates deals
-- [ ] Deal cards are tappable with visual feedback
-- [ ] Action menu appears with three options
-- [ ] "Mark Won" updates deal status immediately
-- [ ] List refreshes after any changes
-- [ ] UI is mobile-friendly (thumb-reachable targets)
+- [x] Deal list displays all deals from IndexedDB
+- [x] Each deal shows name, value, and status badge
+- [x] Sentiment dot appears based on latest note sentiment
+- [x] At-risk deals (negative sentiment) have red dot
+- [x] FAB is visible and accessible
+- [x] Add Deal modal opens and creates deals
+- [x] Deal cards are tappable with visual feedback
+- [x] Action menu appears with three options
+- [x] "Mark Won" updates deal status immediately
+- [x] List refreshes after any changes
+- [x] UI is mobile-friendly (thumb-reachable targets)
 
 ---
 

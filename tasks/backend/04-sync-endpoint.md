@@ -325,16 +325,16 @@ Returns all deals and notes from the database.
 
 ## Acceptance Criteria
 
-- [ ] Endpoint accepts POST with `{ lastSync, changes }` body
-- [ ] Incoming deals are upserted with last-write-wins
-- [ ] Incoming notes are inserted (skip if already exists)
-- [ ] Returns `{ serverTime, updates }` response
-- [ ] Updates include deals modified after lastSync
-- [ ] Updates include notes created after lastSync
-- [ ] First sync (lastSync = null) returns all data
-- [ ] Empty changes are handled gracefully
-- [ ] Errors return appropriate error response
-- [ ] CORS headers present
+- [x] Endpoint accepts POST with `{ lastSync, changes }` body
+- [x] Incoming deals are upserted with last-write-wins
+- [x] Incoming notes are inserted (skip if already exists)
+- [x] Returns `{ serverTime, updates }` response
+- [x] Updates include deals modified after lastSync
+- [x] Updates include notes created after lastSync
+- [x] First sync (lastSync = null) returns all data
+- [x] Empty changes are handled gracefully
+- [x] Errors return appropriate error response
+- [x] CORS headers present
 
 ---
 

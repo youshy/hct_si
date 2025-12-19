@@ -29,10 +29,10 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 4. Tap "Create"
 
 **Expected:**
-- [ ] Modal closes
-- [ ] New deal appears in list
-- [ ] Deal shows name, value ($50,000), "Open" badge
-- [ ] No sentiment dot (no notes yet)
+- [x] Modal closes
+- [x] New deal appears in list
+- [x] Deal shows name, value ($50,000), "Open" badge
+- [x] No sentiment dot (no notes yet)
 
 **Time Target:** < 10 seconds
 
@@ -46,10 +46,10 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 4. Tap "Add Note" / Submit
 
 **Expected:**
-- [ ] "Analyzing..." appears briefly
-- [ ] Note appears in list with timestamp
-- [ ] **Green dot** appears next to note
-- [ ] Deal list updates to show green dot
+- [x] "Analyzing..." appears briefly
+- [x] Note appears in list with timestamp
+- [x] **Green dot** appears next to note
+- [x] Deal list updates to show green dot
 
 ---
 
@@ -60,9 +60,9 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 3. Submit
 
 **Expected:**
-- [ ] Note appears with **red dot**
-- [ ] Deal now shows red dot (latest note is negative)
-- [ ] Deal is flagged as **AT RISK**
+- [x] Note appears with **red dot**
+- [x] Deal now shows red dot (latest note is negative)
+- [x] Deal is flagged as **AT RISK**
 
 ---
 
@@ -73,9 +73,9 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 3. Tap "Price"
 
 **Expected:**
-- [ ] Modal closes
-- [ ] Deal status changes to "Lost" badge
-- [ ] Deal appears in loss analytics
+- [x] Modal closes
+- [x] Deal status changes to "Lost" badge
+- [x] Deal appears in loss analytics
 
 ---
 
@@ -85,12 +85,12 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 2. Review all sections
 
 **Expected:**
-- [ ] **At-Risk Deals** section shows deals with negative sentiment
-- [ ] At-risk cards show deal name, value, and note preview
-- [ ] **Loss Summary** shows count and total value
-- [ ] **Loss Reasons** breakdown shows each category
-- [ ] Bars visually represent relative counts
-- [ ] Win/Loss ratio displayed
+- [x] **At-Risk Deals** section shows deals with negative sentiment
+- [x] At-risk cards show deal name, value, and note preview
+- [x] **Loss Summary** shows count and total value
+- [x] **Loss Reasons** breakdown shows each category
+- [x] Bars visually represent relative counts
+- [x] Win/Loss ratio displayed
 
 ---
 
@@ -101,17 +101,17 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 3. Add a note
 
 **Expected:**
-- [ ] Deal is created locally
-- [ ] Note is saved locally (maybe without sentiment)
-- [ ] App doesn't crash
+- [x] Deal is created locally
+- [x] Note is saved locally (maybe without sentiment)
+- [x] App doesn't crash
 
 **Steps (continued):**
 4. Turn off airplane mode
 5. Wait 30 seconds (or trigger sync manually)
 
 **Expected:**
-- [ ] Data syncs to server
-- [ ] Console shows sync activity
+- [x] Data syncs to server
+- [x] Console shows sync activity
 
 ---
 
@@ -122,8 +122,8 @@ Hour 7-8 of the hackathon (Bug Bash phase)
 3. On Device B: Refresh app
 
 **Expected:**
-- [ ] Deal appears on Device B
-- [ ] All notes and sentiment data synced
+- [x] Deal appears on Device B
+- [x] All notes and sentiment data synced
 
 ---
 
@@ -217,15 +217,15 @@ console.log('Loss stats:', stats);
 ## Mobile Testing Checklist
 
 ### iOS Safari
-- [ ] App loads without errors
-- [ ] Touch targets are large enough (48px+)
-- [ ] Modals don't get hidden by keyboard
-- [ ] Scrolling is smooth
-- [ ] FAB is visible and tappable
+- [x] App loads without errors
+- [x] Touch targets are large enough (48px+)
+- [x] Modals don't get hidden by keyboard
+- [x] Scrolling is smooth
+- [x] FAB is visible and tappable
 
 ### Android Chrome
-- [ ] Same as iOS checklist
-- [ ] Back button doesn't break app
+- [x] Same as iOS checklist
+- [x] Back button doesn't break app
 
 ### Common Mobile Issues
 - **Keyboard pushes content up:** Add padding to bottom
@@ -243,30 +243,30 @@ Run through the exact demo script:
 "Salespeople don't log why deals are lost. And they don't notice when deals are going south until it's too late."
 
 ### 2. Create Deal (10 sec)
-- [ ] Open app on phone
-- [ ] Tap FAB → "Acme Corp $50k" → Create
-- [ ] Verify: Deal appears immediately
+- [x] Open app on phone
+- [x] Tap FAB → "Acme Corp $50k" → Create
+- [x] Verify: Deal appears immediately
 
 ### 3. Add Positive Note (15 sec)
-- [ ] Add note: "Great initial call, they love the product"
-- [ ] Verify: **Green dot** appears
+- [x] Add note: "Great initial call, they love the product"
+- [x] Verify: **Green dot** appears
 
 ### 4. Add Negative Note (15 sec)
-- [ ] Add note: "Budget got cut, they're hesitant"
-- [ ] Verify: **Red dot** appears
+- [x] Add note: "Budget got cut, they're hesitant"
+- [x] Verify: **Red dot** appears
 
 ### 5. Show Dashboard (20 sec)
-- [ ] Navigate to Dashboard
-- [ ] Verify: "Acme is now flagged as AT RISK"
+- [x] Navigate to Dashboard
+- [x] Verify: "Acme is now flagged as AT RISK"
 
 ### 6. Mark Deal Lost (10 sec)
-- [ ] On another deal, tap "Mark Lost"
-- [ ] Tap "Competitor"
-- [ ] Verify: Status changes to Lost
+- [x] On another deal, tap "Mark Lost"
+- [x] Tap "Competitor"
+- [x] Verify: Status changes to Lost
 
 ### 7. Loss Analytics (20 sec)
-- [ ] Show loss reasons breakdown
-- [ ] Point out: "Price and Competitor are our top loss reasons"
+- [x] Show loss reasons breakdown
+- [x] Point out: "Price and Competitor are our top loss reasons"
 
 ### 8. Closing (10 sec)
 "8 hours to build. Imagine the patterns we'll find at scale."
@@ -275,14 +275,14 @@ Run through the exact demo script:
 
 ## Pre-Demo Checklist
 
-- [ ] App is deployed and live
-- [ ] Test data created (at least 5 deals with various states)
-- [ ] One at-risk deal ready to show
-- [ ] Loss dashboard has data
-- [ ] Demo device charged and connected
-- [ ] Browser in incognito (fresh state if needed)
-- [ ] Screen sharing tested
-- [ ] Backup plan if live demo fails (screenshots/video)
+- [x] App is deployed and live
+- [x] Test data created (at least 5 deals with various states)
+- [x] One at-risk deal ready to show
+- [x] Loss dashboard has data
+- [x] Demo device charged and connected
+- [x] Browser in incognito (fresh state if needed)
+- [x] Screen sharing tested
+- [x] Backup plan if live demo fails (screenshots/video)
 
 ---
 
@@ -325,11 +325,11 @@ Run through the exact demo script:
 
 ## Sign-Off Checklist
 
-- [ ] All P0 bugs fixed
-- [ ] Demo script works end-to-end
-- [ ] App works on demo device
-- [ ] Team has seen the app working
-- [ ] Screenshots captured for presentation
-- [ ] Production URL is stable
+- [x] All P0 bugs fixed
+- [x] Demo script works end-to-end
+- [x] App works on demo device
+- [x] Team has seen the app working
+- [x] Screenshots captured for presentation
+- [x] Production URL is stable
 
 **Ready for Demo!** 🚀

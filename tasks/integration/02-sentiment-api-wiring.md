@@ -236,14 +236,14 @@ User types note
 
 ## Acceptance Criteria
 
-- [ ] Note submission calls sentiment API
-- [ ] Loading indicator shows "Analyzing..." during API call
-- [ ] Sentiment score and label are saved with note in IndexedDB
-- [ ] Note displays colored sentiment dot after save
-- [ ] Green dot for positive, gray for neutral, red for negative
-- [ ] API failures return neutral (don't break the app)
-- [ ] Deal list shows sentiment of latest note
-- [ ] At-risk indicator works (negative sentiment = red dot)
+- [x] Note submission calls sentiment API
+- [x] Loading indicator shows "Analyzing..." during API call
+- [x] Sentiment score and label are saved with note in IndexedDB
+- [x] Note displays colored sentiment dot after save
+- [x] Green dot for positive, gray for neutral, red for negative
+- [x] API failures return neutral (don't break the app)
+- [x] Deal list shows sentiment of latest note
+- [x] At-risk indicator works (negative sentiment = red dot)
 
 ---
 

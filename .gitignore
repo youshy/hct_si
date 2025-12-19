@@ -13,6 +13,8 @@ build/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.development
 
 # IDE
 .idea/
@@ -27,4 +29,3 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
-

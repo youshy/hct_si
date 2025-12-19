@@ -310,17 +310,17 @@ curl https://your-api.vercel.app/api/notes/[DEAL_ID]
 
 ## Acceptance Criteria
 
-- [ ] GET `/api/deals` returns all deals sorted by created_at desc
-- [ ] POST `/api/deals` creates a deal with name and value
-- [ ] PUT `/api/deals/[id]` updates deal fields
-- [ ] DELETE `/api/deals/[id]` removes a deal
-- [ ] GET `/api/notes/[dealId]` returns notes for a deal
-- [ ] POST `/api/notes` creates a note with optional sentiment
-- [ ] All endpoints return proper JSON responses
-- [ ] All endpoints handle CORS correctly
-- [ ] Validation errors return 400 status
-- [ ] Not found errors return 404 status
-- [ ] Server errors return 500 status with message
+- [x] GET `/api/deals` returns all deals sorted by created_at desc
+- [x] POST `/api/deals` creates a deal with name and value
+- [x] PUT `/api/deals/[id]` updates deal fields
+- [x] DELETE `/api/deals/[id]` removes a deal
+- [x] GET `/api/notes/[dealId]` returns notes for a deal
+- [x] POST `/api/notes` creates a note with optional sentiment
+- [x] All endpoints return proper JSON responses
+- [x] All endpoints handle CORS correctly
+- [x] Validation errors return 400 status
+- [x] Not found errors return 404 status
+- [x] Server errors return 500 status with message
 
 ---
 

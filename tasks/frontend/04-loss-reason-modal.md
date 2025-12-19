@@ -215,15 +215,15 @@ Large buttons (minimum 48x48px, preferably larger) with clear visual feedback.
 
 ## Acceptance Criteria
 
-- [ ] Modal appears when "Mark Lost" is selected from deal action menu
-- [ ] Shows 5 loss reason options in a grid layout
-- [ ] Buttons are large enough for easy mobile tapping (min 48px)
-- [ ] Tapping a reason immediately updates the deal
-- [ ] Deal status changes to 'lost' with selected loss_reason
-- [ ] Modal closes after selection
-- [ ] Deal list refreshes to show updated status
-- [ ] Modal can be dismissed by tapping backdrop
-- [ ] Works correctly on mobile devices
+- [x] Modal appears when "Mark Lost" is selected from deal action menu
+- [x] Shows 5 loss reason options in a grid layout
+- [x] Buttons are large enough for easy mobile tapping (min 48px)
+- [x] Tapping a reason immediately updates the deal
+- [x] Deal status changes to 'lost' with selected loss_reason
+- [x] Modal closes after selection
+- [x] Deal list refreshes to show updated status
+- [x] Modal can be dismissed by tapping backdrop
+- [x] Works correctly on mobile devices
 
 ---
 

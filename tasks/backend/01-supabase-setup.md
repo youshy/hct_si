@@ -237,16 +237,16 @@ export default async function handler(req: Request) {
 
 ## Acceptance Criteria
 
-- [ ] Supabase project created
-- [ ] Database schema deployed (deals + notes tables)
-- [ ] Indexes created for performance
-- [ ] Row Level Security enabled with permissive policies
-- [ ] Environment variables set (SUPABASE_URL, SUPABASE_ANON_KEY)
-- [ ] Supabase client module exports working client
-- [ ] TypeScript types defined for Deal and Note
-- [ ] CORS headers helper working
-- [ ] JSON response helpers working
-- [ ] Health check endpoint returns "healthy"
+- [x] Supabase project created
+- [x] Database schema deployed (deals + notes tables)
+- [x] Indexes created for performance
+- [x] Row Level Security enabled with permissive policies
+- [x] Environment variables set (SUPABASE_URL, SUPABASE_ANON_KEY)
+- [x] Supabase client module exports working client
+- [x] TypeScript types defined for Deal and Note
+- [x] CORS headers helper working
+- [x] JSON response helpers working
+- [x] Health check endpoint returns "healthy"
 
 ---
 

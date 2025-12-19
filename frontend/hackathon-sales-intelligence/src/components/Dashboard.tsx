@@ -3,14 +3,20 @@ import {
   getOpenDeals,
   getLatestNoteByDeal,
   getLossStats,
+  getWinStats,
+  getTotalStats,
   getWinLossRatio,
   type Deal,
   type Note,
   type LossStats,
+  type WinStats,
+  type TotalStats,
   type WinLossRatio
 } from '../lib/db';
 import { formatCurrency } from '../lib/utils/format';
 import { AtRiskCard } from './AtRiskCard';
+import { EmptyState } from './EmptyState';
+import { DashboardSkeleton } from './Skeleton';
 
 interface AtRiskDeal {
   deal: Deal;
@@ -27,7 +33,9 @@ const REASON_LABELS: Record<string, string> = {
 
 export function Dashboard() {
   const [atRiskDeals, setAtRiskDeals] = useState<AtRiskDeal[]>([]);
+  const [totalStats, setTotalStats] = useState<TotalStats | null>(null);
   const [lossStats, setLossStats] = useState<LossStats | null>(null);
+  const [winStats, setWinStats] = useState<WinStats | null>(null);
   const [winLossRatio, setWinLossRatio] = useState<WinLossRatio | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,7 +52,9 @@ export function Dashboard() {
       }
 
       setAtRiskDeals(atRisk);
+      setTotalStats(await getTotalStats());
       setLossStats(await getLossStats());
+      setWinStats(await getWinStats());
       setWinLossRatio(await getWinLossRatio());
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -59,8 +69,13 @@ export function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading dashboard...</div>
+      <div className="min-h-screen bg-gray-100 pb-24">
+        <header className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="px-4 py-4">
+            <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          </div>
+        </header>
+        <DashboardSkeleton />
       </div>
     );
   }
@@ -79,14 +94,20 @@ export function Dashboard() {
 
       <main className="px-4 py-4">
         {/* At-Risk Deals Section */}
-        <section className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-6">
-          <h2 className="text-red-800 font-bold text-lg mb-4 flex items-center gap-2">
-            <span>⚠️</span> At-Risk Deals
+        <section className={`p-4 rounded-r-lg mb-6 border-l-4 ${
+          atRiskDeals.length === 0
+            ? 'bg-green-50 border-green-500'
+            : 'bg-red-50 border-red-500'
+        }`}>
+          <h2 className={`font-bold text-lg mb-4 flex items-center gap-2 ${
+            atRiskDeals.length === 0 ? 'text-green-800' : 'text-red-800'
+          }`}>
+            <span>{atRiskDeals.length === 0 ? '✅' : '⚠️'}</span>
+            {atRiskDeals.length === 0 ? 'All Deals Healthy' : 'At-Risk Deals'}
           </h2>
           {atRiskDeals.length === 0 ? (
             <div className="text-center text-green-600 py-4">
-              <span className="text-3xl">✅</span>
-              <p className="mt-2">No at-risk deals!</p>
+              <p>No at-risk deals - great job!</p>
             </div>
           ) : (
             atRiskDeals.map(({ deal, latestNote }) => (
@@ -100,17 +121,61 @@ export function Dashboard() {
           )}
         </section>
 
+        {/* Pipeline Summary */}
+        <section className="mb-6">
+          <h2 className="text-gray-700 font-semibold mb-3">Pipeline Overview</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg shadow-sm text-center border border-blue-200">
+              <div className="text-xs text-blue-600 uppercase tracking-wide">Total Deals</div>
+              <div className="text-2xl font-bold text-blue-700">{totalStats?.totalDeals ?? 0}</div>
+            </div>
+            <div className="bg-blue-50 p-4 rounded-lg shadow-sm text-center border border-blue-200">
+              <div className="text-xs text-blue-600 uppercase tracking-wide">Total Value</div>
+              <div className="text-2xl font-bold text-blue-700">
+                {formatCurrency(totalStats?.totalValue ?? 0)}
+              </div>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg shadow-sm text-center border border-purple-200">
+              <div className="text-xs text-purple-600 uppercase tracking-wide">Open Deals</div>
+              <div className="text-2xl font-bold text-purple-700">{totalStats?.openDeals ?? 0}</div>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg shadow-sm text-center border border-purple-200">
+              <div className="text-xs text-purple-600 uppercase tracking-wide">Open Value</div>
+              <div className="text-2xl font-bold text-purple-700">
+                {formatCurrency(totalStats?.openValue ?? 0)}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Won Summary */}
+        <section className="mb-6">
+          <h2 className="text-gray-700 font-semibold mb-3">Won Deals</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-green-50 p-4 rounded-lg shadow-sm text-center border border-green-200">
+              <div className="text-xs text-green-600 uppercase tracking-wide">Deals Won</div>
+              <div className="text-2xl font-bold text-green-700">{winStats?.totalWon ?? 0}</div>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg shadow-sm text-center border border-green-200">
+              <div className="text-xs text-green-600 uppercase tracking-wide">Value Won</div>
+              <div className="text-2xl font-bold text-green-700">
+                {formatCurrency(winStats?.totalValue ?? 0)}
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Loss Summary */}
         <section className="mb-6">
-          <h2 className="text-gray-700 font-semibold mb-3">Loss Summary</h2>
+          <h2 className="text-gray-700 font-semibold mb-3">Lost Deals</h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-              <div className="text-xs text-gray-500 uppercase tracking-wide">Deals Lost</div>
-              <div className="text-2xl font-bold text-gray-900">{lossStats?.totalLost ?? 0}</div>
+            <div className="bg-red-50 p-4 rounded-lg shadow-sm text-center border border-red-200">
+              <div className="text-xs text-red-600 uppercase tracking-wide">Deals Lost</div>
+              <div className="text-2xl font-bold text-red-700">{lossStats?.totalLost ?? 0}</div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm text-center">
-              <div className="text-xs text-gray-500 uppercase tracking-wide">Value Lost</div>
-              <div className="text-2xl font-bold text-gray-900">
+            <div className="bg-red-50 p-4 rounded-lg shadow-sm text-center border border-red-200">
+              <div className="text-xs text-red-600 uppercase tracking-wide">Value Lost</div>
+              <div className="text-2xl font-bold text-red-700">
                 {formatCurrency(lossStats?.totalValue ?? 0)}
               </div>
             </div>
@@ -137,9 +202,15 @@ export function Dashboard() {
                 </div>
               ))
             ) : (
-              <div className="text-center text-gray-500 py-4">
-                No loss data yet.
-              </div>
+              <EmptyState
+                icon={
+                  <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                }
+                title="No loss data yet"
+                description="Loss insights will appear here once you mark deals as lost"
+              />
             )}
           </div>
         </section>

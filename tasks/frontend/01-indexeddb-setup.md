@@ -186,14 +186,14 @@ export * from './notes';
 
 ## Acceptance Criteria
 
-- [ ] Database initializes without errors
-- [ ] Can create a new deal with `addDeal()`
-- [ ] Can update a deal with `updateDeal()`
-- [ ] Can retrieve all deals with `getDeals()`
-- [ ] Can create notes with `addNote()`
-- [ ] Can retrieve notes by deal with `getNotesByDeal()`
-- [ ] Unsynced items can be queried for sync operations
-- [ ] All functions are properly typed with TypeScript
+- [x] Database initializes without errors
+- [x] Can create a new deal with `addDeal()`
+- [x] Can update a deal with `updateDeal()`
+- [x] Can retrieve all deals with `getDeals()`
+- [x] Can create notes with `addNote()`
+- [x] Can retrieve notes by deal with `getNotesByDeal()`
+- [x] Unsynced items can be queried for sync operations
+- [x] All functions are properly typed with TypeScript
 
 ---
 

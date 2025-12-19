@@ -2,13 +2,35 @@ import { useState, useEffect, useCallback } from 'react';
 import { getDeals, addDeal, updateDeal, getLatestNoteByDeal, type Deal } from '../lib/db';
 import { DealCard } from './DealCard';
 import { AddDealModal } from './AddDealModal';
+import { EditDealModal } from './EditDealModal';
 import { ActionMenu } from './ActionMenu';
 import { NotesModal } from './NotesModal';
 import { LossReasonModal } from './LossReasonModal';
+import { useToast } from './Toast';
+import { PullToRefresh } from './PullToRefresh';
+import { EmptyState } from './EmptyState';
+import { DealListSkeleton } from './Skeleton';
 
 interface DealWithSentiment {
   deal: Deal;
   sentimentLabel: string | null;
+}
+
+type SortOption = 'date-desc' | 'date-asc' | 'value-desc' | 'value-asc' | 'status';
+
+const sortLabels: Record<SortOption, string> = {
+  'date-desc': 'Newest First',
+  'date-asc': 'Oldest First',
+  'value-desc': 'Highest Value',
+  'value-asc': 'Lowest Value',
+  'status': 'Open First',
+};
+
+// Haptic feedback helper
+function vibrate(pattern: number | number[] = 10) {
+  if (navigator.vibrate) {
+    navigator.vibrate(pattern);
+  }
 }
 
 export function DealList() {
@@ -16,8 +38,12 @@ export function DealList() {
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedDeal, setSelectedDeal] = useState<Deal | null>(null);
+  const [editDeal, setEditDeal] = useState<Deal | null>(null);
   const [notesDeal, setNotesDeal] = useState<Deal | null>(null);
   const [lossDeal, setLossDeal] = useState<Deal | null>(null);
+  const [sortBy, setSortBy] = useState<SortOption>('date-desc');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const { showToast } = useToast();
 
   const loadDeals = useCallback(async () => {
     try {
@@ -43,14 +69,41 @@ export function DealList() {
     loadDeals();
   }, [loadDeals]);
 
+  const sortedDeals = [...deals].sort((a, b) => {
+    switch (sortBy) {
+      case 'date-desc':
+        return new Date(b.deal.created_at).getTime() - new Date(a.deal.created_at).getTime();
+      case 'date-asc':
+        return new Date(a.deal.created_at).getTime() - new Date(b.deal.created_at).getTime();
+      case 'value-desc':
+        return b.deal.value - a.deal.value;
+      case 'value-asc':
+        return a.deal.value - b.deal.value;
+      case 'status':
+        const statusOrder = { open: 0, won: 1, lost: 2 };
+        return statusOrder[a.deal.status] - statusOrder[b.deal.status];
+      default:
+        return 0;
+    }
+  });
+
   const handleAddDeal = async (name: string, value: number) => {
-    await addDeal(name, value);
-    await loadDeals();
+    try {
+      await addDeal(name, value);
+      vibrate();
+      showToast(`Deal "${name}" created`);
+      await loadDeals();
+    } catch (error) {
+      console.error('Failed to add deal:', error);
+      showToast('Failed to create deal', 'error');
+    }
   };
 
   const handleMarkWon = async () => {
     if (selectedDeal) {
       await updateDeal(selectedDeal.id, { status: 'won' });
+      vibrate([10, 50, 10]);
+      showToast(`"${selectedDeal.name}" marked as won!`, 'success');
       await loadDeals();
     }
   };
@@ -67,10 +120,26 @@ export function DealList() {
     }
   };
 
+  const handleEditDeal = () => {
+    if (selectedDeal) {
+      setEditDeal(selectedDeal);
+    }
+  };
+
+  const handleRefresh = useCallback(async () => {
+    await loadDeals();
+    showToast('Deals refreshed', 'info');
+  }, [loadDeals, showToast]);
+
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading deals...</div>
+      <div className="min-h-screen bg-gray-100 pb-24">
+        <header className="bg-white shadow-sm sticky top-0 z-10">
+          <div className="px-4 py-4">
+            <h1 className="text-xl font-bold text-gray-900">Deals</h1>
+          </div>
+        </header>
+        <DealListSkeleton />
       </div>
     );
   }
@@ -78,33 +147,70 @@ export function DealList() {
   return (
     <div className="min-h-screen bg-gray-100 pb-24">
       <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="px-4 py-4">
+        <div className="px-4 py-4 flex items-center justify-between">
           <h1 className="text-xl font-bold text-gray-900">Deals</h1>
+          <div className="relative">
+            <button
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              className="flex items-center gap-1 text-sm text-gray-600 px-3 py-1.5 rounded-lg bg-gray-100 active:bg-gray-200"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+              </svg>
+              {sortLabels[sortBy]}
+            </button>
+            {showSortMenu && (
+              <div className="absolute right-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-20">
+                {(Object.keys(sortLabels) as SortOption[]).map((option) => (
+                  <button
+                    key={option}
+                    onClick={() => { setSortBy(option); setShowSortMenu(false); vibrate(); }}
+                    className={`w-full px-4 py-2 text-left text-sm ${
+                      sortBy === option ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    {sortLabels[option]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="px-4 py-4">
-        {deals.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 mb-2">No deals yet</p>
-            <p className="text-sm text-gray-400">Tap + to add your first deal</p>
-          </div>
-        ) : (
-          deals.map(({ deal, sentimentLabel }) => (
-            <DealCard
-              key={deal.id}
-              deal={deal}
-              sentimentLabel={sentimentLabel}
-              onClick={() => setSelectedDeal(deal)}
+      <PullToRefresh onRefresh={handleRefresh}>
+        <main className="px-4 py-4">
+          {sortedDeals.length === 0 ? (
+            <EmptyState
+              icon={
+                <svg className="w-full h-full" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              }
+              title="No deals yet"
+              description="Start tracking your sales pipeline by adding your first deal"
+              action={{
+                label: 'Add Your First Deal',
+                onClick: () => setShowAddModal(true)
+              }}
             />
-          ))
-        )}
-      </main>
+          ) : (
+            sortedDeals.map(({ deal, sentimentLabel }) => (
+              <DealCard
+                key={deal.id}
+                deal={deal}
+                sentimentLabel={sentimentLabel}
+                onClick={() => setSelectedDeal(deal)}
+              />
+            ))
+          )}
+        </main>
+      </PullToRefresh>
 
       {/* Floating Action Button */}
       <button
         onClick={() => setShowAddModal(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg active:bg-blue-700 z-20"
+        className="fixed bottom-24 right-6 w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg active:bg-blue-700 z-20"
         aria-label="Add deal"
       >
         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -124,6 +230,7 @@ export function DealList() {
           isOpen={!!selectedDeal}
           onClose={() => setSelectedDeal(null)}
           onAddNote={handleAddNote}
+          onEditDeal={handleEditDeal}
           onMarkWon={handleMarkWon}
           onMarkLost={handleMarkLost}
         />
@@ -147,6 +254,13 @@ export function DealList() {
           onComplete={loadDeals}
         />
       )}
+
+      <EditDealModal
+        deal={editDeal}
+        isOpen={!!editDeal}
+        onClose={() => setEditDeal(null)}
+        onComplete={loadDeals}
+      />
     </div>
   );
 }

@@ -2,18 +2,25 @@ import { db } from './database';
 import type { Deal } from './types';
 
 export async function addDeal(name: string, value: number): Promise<Deal> {
+  const now = new Date();
   const deal: Deal = {
     id: crypto.randomUUID(),
     name,
     value,
     status: 'open',
     loss_reason: null,
-    created_at: new Date(),
-    updated_at: new Date(),
+    created_at: now,
+    updated_at: now,
     synced: false
   };
-  await db.deals.add(deal);
-  return deal;
+  try {
+    await db.deals.add(deal);
+    console.log('Deal added to IndexedDB:', deal.id);
+    return deal;
+  } catch (error) {
+    console.error('Failed to add deal to IndexedDB:', error);
+    throw error;
+  }
 }
 
 export async function updateDeal(id: string, updates: Partial<Deal>): Promise<void> {
@@ -46,6 +53,44 @@ export async function getOpenDeals(): Promise<Deal[]> {
 
 export async function getLostDeals(): Promise<Deal[]> {
   return db.deals.where('status').equals('lost').toArray();
+}
+
+export async function getWonDeals(): Promise<Deal[]> {
+  return db.deals.where('status').equals('won').toArray();
+}
+
+export interface TotalStats {
+  totalDeals: number;
+  totalValue: number;
+  openDeals: number;
+  openValue: number;
+}
+
+export async function getTotalStats(): Promise<TotalStats> {
+  const allDeals = await getDeals();
+  const openDeals = allDeals.filter(d => d.status === 'open');
+
+  return {
+    totalDeals: allDeals.length,
+    totalValue: allDeals.reduce((sum, deal) => sum + deal.value, 0),
+    openDeals: openDeals.length,
+    openValue: openDeals.reduce((sum, deal) => sum + deal.value, 0)
+  };
+}
+
+export interface WinStats {
+  totalWon: number;
+  totalValue: number;
+}
+
+export async function getWinStats(): Promise<WinStats> {
+  const wonDeals = await getWonDeals();
+  const totalValue = wonDeals.reduce((sum, deal) => sum + deal.value, 0);
+
+  return {
+    totalWon: wonDeals.length,
+    totalValue
+  };
 }
 
 export interface LossStats {

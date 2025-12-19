@@ -7,8 +7,8 @@ export class DealsDatabase extends Dexie {
 
   constructor() {
     super('DealsTracker');
-    this.version(1).stores({
-      deals: 'id, status, synced, updated_at',
+    this.version(2).stores({
+      deals: 'id, status, synced, created_at, updated_at',
       notes: 'id, deal_id, synced, created_at'
     });
   }

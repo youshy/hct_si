@@ -274,17 +274,17 @@ interface DashboardState {
 
 ## Acceptance Criteria
 
-- [ ] Dashboard displays at-risk deals prominently at the top
-- [ ] At-risk deals show deal name, value, and negative note preview
-- [ ] At-risk section has red styling to draw attention
-- [ ] Loss summary shows total deals lost and total value
-- [ ] Loss reasons breakdown shows all 5 categories
-- [ ] Each reason shows count and value
-- [ ] Visual bars represent relative counts
-- [ ] Win/loss ratio is displayed
-- [ ] Data refreshes when returning to dashboard
-- [ ] Dashboard is scrollable on mobile
-- [ ] Empty states handled (no at-risk deals, no lost deals)
+- [x] Dashboard displays at-risk deals prominently at the top
+- [x] At-risk deals show deal name, value, and negative note preview
+- [x] At-risk section has red styling to draw attention
+- [x] Loss summary shows total deals lost and total value
+- [x] Loss reasons breakdown shows all 5 categories
+- [x] Each reason shows count and value
+- [x] Visual bars represent relative counts
+- [x] Win/loss ratio is displayed
+- [x] Data refreshes when returning to dashboard
+- [x] Dashboard is scrollable on mobile
+- [x] Empty states handled (no at-risk deals, no lost deals)
 
 ---
 

@@ -3,6 +3,7 @@ import type { Deal, Note } from '../lib/db';
 import { getNotesByDeal, addNote } from '../lib/db';
 import { analyzeSentiment } from '../lib/api/sentiment';
 import { NoteItem } from './NoteItem';
+import { useToast } from './Toast';
 
 interface NotesModalProps {
   deal: Deal;
@@ -15,21 +16,27 @@ export function NotesModal({ deal, isOpen, onClose, onNoteAdded }: NotesModalPro
   const [notes, setNotes] = useState<Note[]>([]);
   const [newNoteText, setNewNoteText] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && deal?.id) {
       loadNotes();
     }
-  }, [isOpen, deal.id]);
+  }, [isOpen, deal?.id]);
 
   const loadNotes = async () => {
-    const dealNotes = await getNotesByDeal(deal.id);
-    setNotes(dealNotes.reverse());
+    if (!deal?.id) return;
+    try {
+      const dealNotes = await getNotesByDeal(deal.id);
+      setNotes(dealNotes.reverse());
+    } catch (error) {
+      console.error('Failed to load notes:', error);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNoteText.trim() || isAnalyzing) return;
+    if (!newNoteText.trim() || isAnalyzing || !deal?.id) return;
 
     setIsAnalyzing(true);
 
@@ -43,18 +50,27 @@ export function NotesModal({ deal, isOpen, onClose, onNoteAdded }: NotesModalPro
       );
       setNotes([note, ...notes]);
       setNewNoteText('');
+      if (navigator.vibrate) navigator.vibrate(10);
+      showToast('Note added');
       onNoteAdded();
-    } catch {
-      const note = await addNote(deal.id, newNoteText.trim(), null, null);
-      setNotes([note, ...notes]);
-      setNewNoteText('');
-      onNoteAdded();
+    } catch (error) {
+      console.error('Failed to add note with sentiment:', error);
+      try {
+        const note = await addNote(deal.id, newNoteText.trim(), null, null);
+        setNotes([note, ...notes]);
+        setNewNoteText('');
+        showToast('Note added (sentiment unavailable)', 'info');
+        onNoteAdded();
+      } catch (innerError) {
+        console.error('Failed to add note:', innerError);
+        showToast('Failed to add note', 'error');
+      }
     } finally {
       setIsAnalyzing(false);
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !deal) return null;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50">

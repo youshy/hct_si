@@ -283,15 +283,15 @@ Done (retry in 30s if error)
 
 ## Acceptance Criteria
 
-- [ ] Sync runs automatically when app loads (if online)
-- [ ] Sync runs when device comes online
-- [ ] Local unsynced changes are sent to server
-- [ ] Server updates are applied to local DB
-- [ ] Conflict resolution uses last-write-wins (server updated_at)
-- [ ] Sync status is exposed (isSyncing, lastSyncTime, error)
-- [ ] Failed syncs retry after 30 seconds
-- [ ] App works fully offline (sync just doesn't run)
-- [ ] Manual sync trigger available via `syncNow()`
+- [x] Sync runs automatically when app loads (if online)
+- [x] Sync runs when device comes online
+- [x] Local unsynced changes are sent to server
+- [x] Server updates are applied to local DB
+- [x] Conflict resolution uses last-write-wins (server updated_at)
+- [x] Sync status is exposed (isSyncing, lastSyncTime, error)
+- [x] Failed syncs retry after 30 seconds
+- [x] App works fully offline (sync just doesn't run)
+- [x] Manual sync trigger available via `syncNow()`
 
 ---
 

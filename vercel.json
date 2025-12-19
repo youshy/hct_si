@@ -3,41 +3,35 @@
   "buildCommand": "cd frontend/hackathon-sales-intelligence && npm install && npm run build",
   "outputDirectory": "frontend/hackathon-sales-intelligence/dist",
   "framework": "vite",
-  "installCommand": "cd backend && npm install",
-  "functions": {
-    "backend/api/**/*.ts": {
-      "runtime": "@vercel/node@3"
-    }
-  },
+  "installCommand": "npm install --prefix api && npm install --prefix backend",
   "rewrites": [
     {
       "source": "/api/deals/:id",
-      "destination": "/backend/api/deals/[id]"
+      "destination": "/api/deals/[id]"
     },
     {
       "source": "/api/deals",
-      "destination": "/backend/api/deals/index"
+      "destination": "/api/deals/index"
     },
     {
       "source": "/api/notes/:dealId",
-      "destination": "/backend/api/notes/[dealId]"
+      "destination": "/api/notes/[dealId]"
     },
     {
       "source": "/api/notes",
-      "destination": "/backend/api/notes/index"
+      "destination": "/api/notes/index"
     },
     {
       "source": "/api/health",
-      "destination": "/backend/api/health"
+      "destination": "/api/health"
     },
     {
       "source": "/api/sentiment",
-      "destination": "/backend/api/sentiment"
+      "destination": "/api/sentiment"
     },
     {
       "source": "/api/sync",
-      "destination": "/backend/api/sync"
+      "destination": "/api/sync"
     }
   ]
 }
-

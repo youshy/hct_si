@@ -193,17 +193,17 @@ interface NotesModalState {
 
 ## Acceptance Criteria
 
-- [ ] Modal opens when "Add Note" is selected from deal action menu
-- [ ] Existing notes load and display correctly
-- [ ] Each note shows sentiment indicator dot
-- [ ] Note input accepts multiline text
-- [ ] Submit button is disabled when input is empty
-- [ ] "Analyzing..." shows during API call
-- [ ] Sentiment API is called on note submit
-- [ ] New note appears immediately with sentiment indicator
-- [ ] Input clears after successful submission
-- [ ] Gracefully handles API errors (shows note with neutral sentiment)
-- [ ] Modal can be closed via X button or backdrop tap
+- [x] Modal opens when "Add Note" is selected from deal action menu
+- [x] Existing notes load and display correctly
+- [x] Each note shows sentiment indicator dot
+- [x] Note input accepts multiline text
+- [x] Submit button is disabled when input is empty
+- [x] "Analyzing..." shows during API call
+- [x] Sentiment API is called on note submit
+- [x] New note appears immediately with sentiment indicator
+- [x] Input clears after successful submission
+- [x] Gracefully handles API errors (shows note with neutral sentiment)
+- [x] Modal can be closed via X button or backdrop tap
 
 ---
 

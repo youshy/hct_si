@@ -5,11 +5,12 @@ interface ActionMenuProps {
   isOpen: boolean;
   onClose: () => void;
   onAddNote: () => void;
+  onEditDeal: () => void;
   onMarkWon: () => void;
   onMarkLost: () => void;
 }
 
-export function ActionMenu({ deal, isOpen, onClose, onAddNote, onMarkWon, onMarkLost }: ActionMenuProps) {
+export function ActionMenu({ deal, isOpen, onClose, onAddNote, onEditDeal, onMarkWon, onMarkLost }: ActionMenuProps) {
   if (!isOpen) return null;
 
   return (
@@ -26,6 +27,12 @@ export function ActionMenu({ deal, isOpen, onClose, onAddNote, onMarkWon, onMark
             className="w-full py-3 px-4 text-left text-gray-900 bg-gray-50 rounded-lg active:bg-gray-100 font-medium"
           >
             Add Note
+          </button>
+          <button
+            onClick={() => { onEditDeal(); onClose(); }}
+            className="w-full py-3 px-4 text-left text-blue-700 bg-blue-50 rounded-lg active:bg-blue-100 font-medium"
+          >
+            Edit Deal
           </button>
           {deal.status === 'open' && (
             <>
